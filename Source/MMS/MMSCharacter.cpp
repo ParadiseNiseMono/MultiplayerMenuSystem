@@ -11,8 +11,12 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "MMS.h"
+#include "OnlineSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
 
-AMMSCharacter::AMMSCharacter()
+AMMSCharacter::AMMSCharacter():
+OnCreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -48,6 +52,22 @@ AMMSCharacter::AMMSCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+
+	if (OnlineSubsystem)
+	{
+		OnlineSession = OnlineSubsystem->GetSessionInterface();
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1,
+			15.f,
+			FColor::Cyan,
+			FString::Printf(TEXT("Found subsystem: %s"),
+				*OnlineSubsystem->GetSubsystemName().ToString()));
+		}
+	}
 }
 
 void AMMSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -70,6 +90,12 @@ void AMMSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	{
 		UE_LOG(LogMMS, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AMMSCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
 }
 
 void AMMSCharacter::Move(const FInputActionValue& Value)
@@ -130,4 +156,54 @@ void AMMSCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AMMSCharacter::CreateGameSession()
+{
+	if (!OnlineSession.IsValid()) return;
+
+	FNamedOnlineSession* ExistingSession = OnlineSession->GetNamedSession(NAME_GameSession);
+	if (ExistingSession != nullptr) {
+		OnlineSession->DestroySession(NAME_GameSession);
+	}
+
+	OnlineSession->AddOnCreateSessionCompleteDelegate_Handle(OnCreateSessionCompleteDelegate);
+
+	TSharedPtr<FOnlineSessionSettings> SessionSettings = MakeShareable(new FOnlineSessionSettings());
+	SessionSettings->bIsLANMatch = false;
+	SessionSettings->bUsesPresence = true;
+	SessionSettings->bShouldAdvertise = true;
+	SessionSettings->NumPublicConnections = 4;
+	SessionSettings->bAllowJoinInProgress = true;
+	SessionSettings->bAllowJoinViaPresence = true;
+	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	OnlineSession->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *SessionSettings);
+}
+
+void AMMSCharacter::OnCreateSessionComplete(FName SessionName, bool bSuccess)
+{
+	if (bSuccess)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Blue,
+				FString::Printf(TEXT("OnCreateSessionComplete success: %s"), *SessionName.ToString())
+			);
+		}
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Red,
+				FString::Printf(TEXT("OnCreateSessionComplete failed: %s"), *SessionName.ToString())
+			);
+		}
+	}
 }
