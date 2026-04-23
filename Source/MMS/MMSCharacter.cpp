@@ -162,7 +162,7 @@ void AMMSCharacter::CreateGameSession()
 {
 	if (!OnlineSession.IsValid()) return;
 
-	FNamedOnlineSession* ExistingSession = OnlineSession->GetNamedSession(NAME_GameSession);
+	auto ExistingSession = OnlineSession->GetNamedSession(NAME_GameSession);
 	if (ExistingSession != nullptr) {
 		OnlineSession->DestroySession(NAME_GameSession);
 	}
