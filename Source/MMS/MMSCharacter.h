@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/OnlineSessionDelegates.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "Logging/LogMacros.h"
 #include "MMSCharacter.generated.h"
 
@@ -98,7 +99,7 @@ public:
 
 public:
 	
-	TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> OnlineSession;
+	IOnlineSession* OnlineSession;
 	
 protected:
 

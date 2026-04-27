@@ -57,7 +57,7 @@ OnCreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(
 
 	if (OnlineSubsystem)
 	{
-		OnlineSession = OnlineSubsystem->GetSessionInterface();
+		OnlineSession = OnlineSubsystem->GetSessionInterface().Get();
 
 		if (GEngine)
 		{
@@ -160,7 +160,7 @@ void AMMSCharacter::DoJumpEnd()
 
 void AMMSCharacter::CreateGameSession()
 {
-	if (!OnlineSession.IsValid()) return;
+	if (!OnlineSession) return;
 
 	auto ExistingSession = OnlineSession->GetNamedSession(NAME_GameSession);
 	if (ExistingSession != nullptr) {
