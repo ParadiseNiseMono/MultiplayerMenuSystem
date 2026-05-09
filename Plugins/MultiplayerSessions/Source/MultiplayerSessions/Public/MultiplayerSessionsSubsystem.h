@@ -32,7 +32,9 @@ protected:
 	void OnStartSessionComplete(FName SessionName, bool bWasSuccessful);
 
 private:
-	TWeakPtr<IOnlineSession> SessionInterface;
+	IOnlineSessionPtr SessionInterface;
+
+	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
 
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
 	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
