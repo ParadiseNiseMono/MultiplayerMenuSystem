@@ -31,6 +31,9 @@ protected:
 	UFUNCTION()
 	void JoinButtonClicked();
 
+	UFUNCTION()
+	void OnCreateSession(bool bWasSuccessful);
+
 private:
 
 	void MenuTearDown();
