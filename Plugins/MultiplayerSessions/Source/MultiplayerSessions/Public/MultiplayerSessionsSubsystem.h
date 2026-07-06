@@ -47,6 +47,8 @@ private:
 
 	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
 
+	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
+
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
 	FOnFindSessionsCompleteDelegate FindSessionsCompleteDelegate;
 	FOnJoinSessionCompleteDelegate JoinSessionCompleteDelegate;
